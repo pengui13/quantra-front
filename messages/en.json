@@ -7,11 +7,29 @@
     "login": "Log in",
     "signup": "Sign up"
   },
-  "common": {
-    "depoDetails": "Deposit details",
-    "Choose currency": "Choose currency",
-    "Choose network": "Choose network",
-    "search": "Search",
-    "address": "Deposit Address"
+  "deposit": {
+    "header": { "title": "Deposit details" },
+    "actions": {
+      "groupLabel": "Deposit actions",
+      "deposit": "Deposit",
+      "withdraw": "Withdraw"
+    },
+    "selectors": {
+      "currency": { "label": "Choose currency" },
+      "network": { "label": "Choose network" }
+    },
+    "inputs": {
+      "search": { "placeholder": "Search" }
+    },
+    "labels": {
+      "address": "Deposit Address"
+    },
+    "stats": {
+      "minDeposit": { "label": "Minimum deposit" },
+      "arrivalAfter": { "label": "Credited after" },
+      "confirmations": { "suffix": "confirmations" },
+      "eta": { "label": "Estimated time" },
+      "minutes": { "suffix": "min." }
+    }
   }
 }

@@ -49,7 +49,7 @@ async function apiRequest({
     };
 
     if (!skipAuth) {
-      defaultHeaders.Authorization = `JWT ${getCookieValue("access")}`;
+      defaultHeaders.Authorization = `Bearer ${getCookieValue("access")}`;
     }
 
     const mergedHeaders = { ...defaultHeaders, ...headers };
@@ -186,7 +186,7 @@ export async function GetStakeAssets(setTrans) {
 export async function getAddress(setDepo, symbol, network, setSpinner) {
   setSpinner(true);
   apiRequest({
-    endpoint: `${BASE_URL}assets/${symbol}/${network}/addresses/`,
+    endpoint: `${BASE_URL}${symbol}/${network}/deposit/`,
     onSuccess: (jsonData) => {
       if (jsonData.address) setDepo(jsonData.address);
       setSpinner(false);

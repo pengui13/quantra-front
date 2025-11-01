@@ -1,271 +1,368 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import CopyButton from "./CopyButton";
 import { getAddress, DepositPortfolio } from "../../../../api/ApiWrapper";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { Tooltip } from "react-tooltip";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+
 import {
   ChevronDown,
   Search,
   ArrowDownToLine,
   ArrowUpToLine,
   Loader2,
+  Copy as CopyIcon,
+  Check as CheckIcon,
 } from "lucide-react";
 
 export default function Deposit() {
-  const t = useTranslations("common");
+  const t = useTranslations("deposit");
+  const locale = useLocale() || "de-DE";
+  const nf = new Intl.NumberFormat(locale, { maximumFractionDigits: 8 });
+
+  const nbsp = "\u00A0";
+  const formatAmount = (v) => {
+    const n = Number(v);
+    if (Number.isNaN(n)) return v;
+    // drop trailing zeros up to 8 decimals, then format in locale
+    const trimmed = parseFloat(n.toFixed(8));
+    return nf.format(trimmed);
+  };
+
   const searchParams = useSearchParams();
 
-  const [data, setData] = useState([]);
-  const [selectedCurr, setSelectedCurr] = useState("BTC");
-  const [networks, setSelectedNetworks] = useState([]);
-  const [network, setNetwork] = useState(null);
-  const [depo, setDepo] = useState("");
-  const [spinner, setSpinner] = useState(true);
+  const [coins, setCoins] = useState([]);
+  const [selectedSymbol, setSelectedSymbol] = useState("BTC");
+  const [availableNetworks, setAvailableNetworks] = useState([]);
+  const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [coinMenuOpen, setCoinMenuOpen] = useState(false);
+  const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  // ✅ Fetch deposit portfolio
+  /* data */
   useEffect(() => {
-    DepositPortfolio(setData);
+    DepositPortfolio(setCoins);
   }, []);
 
-  // ✅ Set currency if ?key= param is passed
   useEffect(() => {
     const key = searchParams.get("key");
-    if (key) setSelectedCurr(key);
+    if (key) setSelectedSymbol(key);
   }, [searchParams]);
 
-  // ✅ Default to first currency
   useEffect(() => {
-    if (data.length > 0 && data[0].symbol) {
-      setSelectedCurr((curr) => curr || data[0].symbol);
+    if (coins.length > 0 && coins[0]?.symbol) {
+      setSelectedSymbol((curr) => curr || coins[0].symbol);
     }
-  }, [data]);
+  }, [coins]);
 
-  // ✅ Update networks when currency changes
   useEffect(() => {
-    const selected = data.find((c) => c.symbol === selectedCurr);
-    if (selected?.networks) setSelectedNetworks(selected.networks);
-  }, [selectedCurr, data]);
+    const chosen = coins.find((c) => c.symbol === selectedSymbol);
+    setAvailableNetworks(chosen?.networks || []);
+  }, [selectedSymbol, coins]);
 
-  // ✅ Default network
   useEffect(() => {
-    if (networks.length > 0) setNetwork(networks[0]);
-  }, [networks]);
+    if (availableNetworks.length > 0) setSelectedNetwork(availableNetworks[0]);
+  }, [availableNetworks]);
 
-  // ✅ Fetch deposit address
   useEffect(() => {
-    if (network?.name && selectedCurr) {
-      getAddress(setDepo, selectedCurr, network.name, setSpinner);
+    if (selectedNetwork?.name && selectedSymbol) {
+      setCopied(false);
+      getAddress(setAddress, selectedSymbol, selectedNetwork.name, setLoading);
     }
-  }, [network, selectedCurr]);
+  }, [selectedNetwork, selectedSymbol]);
 
-  // ✅ Filtered list
-  const filteredData = searchTerm
-    ? data.filter(
-        (coin) =>
-          coin.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          coin.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : data;
+  const filteredCoins = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return coins;
+    return coins.filter(
+      (c) =>
+        c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+    );
+  }, [coins, query]);
+
+  const handleCopy = async () => {
+    if (!address) return;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(address);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = address;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
 
   return (
-    <div className="flex flex-col w-full bg-bkg rounded-2xl p-7">
-      <div className="flex flex-col w-full items-center justify-center gap-4">
+    <div className="w-full">
+      {/* Outer card */}
+      <div className="relative rounded-3xl bg-bkg p-6 md:p-8 border border-white/5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)]">
         {/* Header */}
-        <div className="flex w-full items-center justify-between">
-          <h5 className="text-bl font-semibold text-xl">{t("depoDetails")}</h5>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl md:text-[28px] font-semibold text-white">
+            {t("header.title")}
+          </h1>
           <div className="flex items-center gap-2">
-            <button className="flex items-center justify-center bg-root-green-8 rounded-lg w-8 h-8">
-              <ArrowDownToLine size={20} color="#4FD1C5" />
+            <button
+              title={t("actions.deposit")}
+              className="w-9 h-9 rounded-xl bg-root-green-8/20 hover:bg-root-green-8/35 transition inline-flex items-center justify-center border border-white/10"
+              type="button"
+            >
+              <ArrowDownToLine size={18} />
             </button>
             <Link href="/withdraw">
-              <button className="flex items-center justify-center bg-log-bkg rounded-lg w-8 h-8">
-                <ArrowUpToLine size={20} color="#4FD1C5" />
+              <button
+                title={t("actions.withdraw")}
+                className="w-9 h-9 rounded-xl bg-log-bkg hover:bg-log-bkg/80 transition inline-flex items-center justify-center border border-white/10"
+                type="button"
+              >
+                <ArrowUpToLine size={18} />
               </button>
             </Link>
           </div>
         </div>
 
-        {/* Currency Selector */}
-        <div className="flex flex-col w-full gap-[30px]">
-          <div className="inline-block w-full relative">
-            <div
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="flex cursor-pointer bg-log-bkg w-full items-center gap-2 px-4 py-2 justify-between rounded-xl"
+        {/* Controls */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Currency */}
+          <div className="relative">
+            <button
+              onClick={() => setCoinMenuOpen((o) => !o)}
+              className="w-full rounded-2xl bg-log-bkg px-4 py-3 border border-white/10 hover:border-white/20 transition flex items-center justify-between"
             >
-              <div className="flex flex-col">
-                <span className="text-xs text-gr font-semibold">
-                  {t("Choose currency")}
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="text-[11px] font-semibold tracking-wide text-gr">
+                  {t("selectors.currency.label")}
+                </div>
                 <div className="flex items-center gap-2">
                   <img
-                    width={24}
-                    height={24}
-                    src={`/assets/${selectedCurr.toLowerCase()}.png`}
-                    alt={selectedCurr}
+                    width={20}
+                    height={20}
+                    src={`/assets/${selectedSymbol.toLowerCase()}.png`}
+                    alt={selectedSymbol}
+                    className="rounded-full"
                   />
-                  <span className="font-medium text-bl">{selectedCurr}</span>
+                  <span className="text-white/95 font-medium">
+                    {selectedSymbol}
+                  </span>
                 </div>
               </div>
-              <ChevronDown size={20} color="#4FD1C5" />
-            </div>
+              <ChevronDown
+                className={`transition ${coinMenuOpen ? "rotate-180" : ""}`}
+                size={18}
+              />
+            </button>
 
-            {/* Dropdown with sticky Search */}
-            {showDropdown && (
-              <div className="absolute rounded-xl shadow-lg w-full overflow-y-auto max-h-[320px] bg-bkg z-50">
-                {/* Sticky Search Bar */}
-                <div className="sticky top-0 z-10 bg-log-bkg px-4 py-2 rounded-t-xl border-b border-white/5">
-                  <div className="flex items-center gap-2">
-                    <Search size={18} color="#4FD1C5" />
-                    <input
-                      type="text"
-                      placeholder={t("search")}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="outline-none bg-log-bkg placeholder:text-gr text-bl font-medium text-sm w-full"
-                    />
-                  </div>
+            {coinMenuOpen && (
+              <div className="absolute mt-2 w-full rounded-2xl bg-bkg border border-white/10 shadow-2xl overflow-hidden z-50">
+                {/* sticky search */}
+                <div className="sticky top-0 bg-log-bkg px-3 py-2 border-b border-white/10 flex items-center gap-2">
+                  <Search size={16} className="text-white/70" />
+                  <input
+                    type="text"
+                    placeholder={t("inputs.search.placeholder")}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-transparent outline-none text-sm text-white placeholder:text-gr"
+                  />
                 </div>
-
-                {/* Currency list */}
-                <div className="divide-y divide-white/5">
-                  {filteredData.map((coin) => (
-                    <div
+                <div className="max-h-72 overflow-y-auto divide-y divide-white/5">
+                  {filteredCoins.map((coin) => (
+                    <button
                       key={coin.symbol}
                       onClick={() => {
-                        setShowDropdown(false);
-                        setSelectedCurr(coin.symbol);
-                        setSelectedNetworks(coin.networks);
+                        setSelectedSymbol(coin.symbol);
+                        setAvailableNetworks(coin.networks);
+                        setCoinMenuOpen(false);
                       }}
-                      className="flex cursor-pointer bg-bkg hover:bg-root-green-8 justify-between py-3 px-3 transition"
+                      className="w-full px-3 py-2.5 hover:bg-root-green-8/20 transition flex items-center gap-2 text-left"
                     >
-                      <div className="flex gap-2 items-center">
-                        <img
-                          src={`/assets/${coin.symbol.toLowerCase()}.png`}
-                          width={24}
-                          height={24}
-                          alt={coin.name}
-                        />
-                        <span className="text-bl font-medium">
-                          {coin.name} ({coin.symbol})
-                        </span>
-                      </div>
-                    </div>
+                      <img
+                        width={20}
+                        height={20}
+                        src={`/assets/${coin.symbol.toLowerCase()}.png`}
+                        alt={coin.name}
+                        className="rounded-full"
+                      />
+                      <span className="text-white/90 text-sm">
+                        {coin.name} <span className="text-gr">({coin.symbol})</span>
+                      </span>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Network Selector */}
-          {network && (
-            <div className="relative w-full">
-              <div
-                onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
-                className="w-full cursor-pointer px-4 py-2 bg-log-bkg rounded-xl"
+          {/* Network */}
+          {selectedNetwork && (
+            <div className="relative">
+              <button
+                onClick={() => setNetworkMenuOpen((o) => !o)}
+                className="w-full rounded-2xl bg-log-bkg px-4 py-3 border border-white/10 hover:border-white/20 transition flex items-center justify-between"
               >
-                <div className="flex flex-col">
-                  <span className="text-gr text-xs font-medium">
-                    {t("Choose network")}
-                  </span>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img
-                        width={24}
-                        height={24}
-                        src={`/assets/${network.name.toLowerCase()}.png`}
-                        alt={network.name}
-                      />
-                      <span className="font-medium text-bl">{network.name}</span>
-                    </div>
-                    {networks.length > 1 && (
-                      <ChevronDown size={20} color="#4FD1C5" />
-                    )}
+                <div className="flex items-center gap-3">
+                  <div className="text-[11px] font-semibold tracking-wide text-gr">
+                    {t("selectors.network.label")}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <img
+                      width={20}
+                      height={20}
+                      src={`/assets/${selectedNetwork.name.toLowerCase()}.png`}
+                      alt={selectedNetwork.name}
+                      className="rounded-full"
+                    />
+                    <span className="text-white/95 font-medium">
+                      {selectedNetwork.name}
+                    </span>
                   </div>
                 </div>
-              </div>
+                <ChevronDown
+                  className={`transition ${networkMenuOpen ? "rotate-180" : ""}`}
+                  size={18}
+                />
+              </button>
 
-              {networks.length > 1 && showNetworkDropdown && (
-                <div className="absolute rounded-xl shadow-lg w-full overflow-y-auto max-h-[300px] bg-bkg z-50">
-                  {networks.map((net) => (
-                    <div
-                      key={net.name}
-                      onClick={() => {
-                        setNetwork(net);
-                        setShowNetworkDropdown(false);
-                      }}
-                      className="flex cursor-pointer bg-bkg hover:bg-root-green-8 py-4 px-2 transition"
-                    >
-                      <span className="text-bl font-medium">{net.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Deposit Address */}
-          {spinner ? (
-            <div className="w-full bg-log-bkg h-[68px] rounded-xl flex items-center justify-center">
-              <Loader2 size={24} className="animate-spin" color="#4FD1C5" />
-            </div>
-          ) : (
-            <div className="flex gap-8 bg-log-bkg flex-col md:flex-row w-full rounded-xl items-center p-4">
-              <div className="flex flex-col gap-2 items-center justify-center">
-                <span className="text-bl text-sm font-medium">{t("address")}</span>
-                <div className="flex items-center justify-center rounded-xl bg-white p-3">
-                  <QRCode value={depo} size={88} bgColor="#ffffff" fgColor="#000000" />
-                </div>
-                <div className="flex items-center gap-2">
-                  {depo && <CopyButton copy={depo} />}
-                  <span className="w-[92px] truncate font-medium text-sm text-bl">
-                    {depo}
-                  </span>
-                </div>
-              </div>
-
-              {network && (
-                <div className="flex flex-col w-full gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-gr">
-                      {t("minDepo")}
-                    </span>
-                    <span className="font-semibold text-sm text-bl">
-                      {network.min_deposit_amount} {selectedCurr}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-gr">
-                      {t("depoArr")}
-                    </span>
-                    <span className="font-semibold text-sm text-bl">
-                      {network.confirmations} {t("confirmations")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm text-gr">
-                      {t("depoTime")}
-                    </span>
-                    <span className="font-semibold text-sm text-bl">
-                      {network.min_deposit_time} {t("min.")}
-                    </span>
+              {availableNetworks.length > 1 && networkMenuOpen && (
+                <div className="absolute mt-2 w-full rounded-2xl bg-bkg border border-white/10 shadow-2xl overflow-hidden z-50">
+                  <div className="max-h-64 overflow-y-auto">
+                    {availableNetworks.map((net) => (
+                      <button
+                        key={net.name}
+                        onClick={() => {
+                          setSelectedNetwork(net);
+                          setNetworkMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2.5 hover:bg-root-green-8/20 transition text-left"
+                      >
+                        <span className="text-white/90 text-sm">{net.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           )}
         </div>
+
+        {/* Content – one col until xl, then split */}
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(300px,360px)_1fr]">
+          {/* Left: QR & address */}
+          <div className="rounded-2xl bg-log-bkg p-4 md:p-5 border border-white/10">
+            {loading ? (
+              <div className="h-[120px] flex items-center justify-center">
+                <Loader2 className="animate-spin text-white/70" size={22} />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-4">
+                <div className="rounded-2xl bg-white p-3 shadow">
+                  <QRCodeSVG
+                    value={address || ""}
+                    size={116}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                  />
+                </div>
+
+                <div className="w-full flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    disabled={!address}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition border border-white/10 disabled:opacity-50"
+                    aria-label={copied ? "Copied" : "Copy address"}
+                    data-tooltip-id="amount-tooltip"
+                    data-tooltip-content={copied ? "Copied" : "Copy"}
+                  >
+                    {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                    <span className="text-xs">{copied ? "Copied" : "Copy"}</span>
+                  </button>
+                  <span
+                    className="flex-1 truncate text-sm font-medium text-white/90"
+                    title={address}
+                  >
+                    {address}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: stats */}
+          {selectedNetwork && (
+            <div className="grid gap-4 content-start">
+              <GlassStat
+                label={t("stats.minDeposit.label")}
+                value={
+                  <>
+                    {formatAmount(selectedNetwork.min_deposit_amount)}
+                    {nbsp}
+                    <span className="text-white/70">{selectedSymbol}</span>
+                  </>
+                }
+              />
+              <GlassStat
+                label={t("stats.arrivalAfter.label")}
+                value={
+                  <>
+                    {selectedNetwork.confirmations}
+                    {nbsp}
+                    <span className="text-white/70">
+                      {t("stats.confirmations.suffix")}
+                    </span>
+                  </>
+                }
+              />
+              <GlassStat
+                label={t("stats.eta.label")}
+                value={
+                  <>
+                    {formatAmount(selectedNetwork.min_deposit_time)}
+                    {nbsp}
+                    <span className="text-white/70">
+                      {t("stats.minutes.suffix")}
+                    </span>
+                  </>
+                }
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <Tooltip id="amount-tooltip" />
+    </div>
+  );
+}
+
+/* Stat tile: label flexes, value never wraps */
+function GlassStat({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-white/5 backdrop-blur border border-white/10 px-4 py-3">
+      <div className="flex items-center gap-3">
+        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-white/70">
+          {label}
+        </span>
+        <span className="text-sm font-semibold text-white whitespace-nowrap tabular-nums">
+          {value}
+        </span>
+      </div>
     </div>
   );
 }

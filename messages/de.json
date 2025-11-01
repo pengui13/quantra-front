@@ -7,11 +7,29 @@
     "login": "Anmelden",
     "signup": "Registrieren"
   },
-  "common": {
-    "depoDetails": "Einzahlungsdetails",
-    "Choose currency": "Währung wählen",
-    "Choose network": "Netzwerk wählen",
-    "search": "Suchen",
-    "address": "Einzahlungsadresse"
+  "deposit": {
+    "header": { "title": "Einzahlungsdetails" },
+    "actions": {
+      "groupLabel": "Einzahlungsaktionen",
+      "deposit": "Einzahlen",
+      "withdraw": "Auszahlen"
+    },
+    "selectors": {
+      "currency": { "label": "Währung wählen" },
+      "network": { "label": "Netzwerk wählen" }
+    },
+    "inputs": {
+      "search": { "placeholder": "Suchen" }
+    },
+    "labels": {
+      "address": "Einzahlungsadresse"
+    },
+    "stats": {
+      "minDeposit": { "label": "Mindesteinzahlung" },
+      "arrivalAfter": { "label": "Gutschrift nach" },
+      "confirmations": { "suffix": "Bestätigungen" },
+      "eta": { "label": "Geschätzte Zeit" },
+      "minutes": { "suffix": "Min." }
+    }
   }
 }

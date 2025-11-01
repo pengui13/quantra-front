@@ -21,7 +21,7 @@ export default function DepositPage() {
 
       <div
         className={`flex ${
-          trans ? "max-w-[1160px]" : "lg:max-w-[530px] px-4 w-full"
+          trans ? "max-w-[1160px]" : "lg:max-w-[800px] px-4 w-full"
         } px-4 items-end pt-[60px] pb-[60px] w-full flex-col mdlg:flex-row mdlg:items-start gap-5 lg:gap-[60px]`}
       >
         <div className="flex flex-col items-center w-full justify-center gap-1">
