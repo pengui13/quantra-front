@@ -1,0 +1,17 @@
+{
+  "Header": {
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "signup": "Registrieren"
+  },
+  "common": {
+    "depoDetails": "Einzahlungsdetails",
+    "Choose currency": "Währung wählen",
+    "Choose network": "Netzwerk wählen",
+    "search": "Suchen",
+    "address": "Einzahlungsadresse"
+  }
+}

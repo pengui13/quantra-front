@@ -1,0 +1,17 @@
+{
+  "Header": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "common": {
+    "depoDetails": "Deposit details",
+    "Choose currency": "Choose currency",
+    "Choose network": "Choose network",
+    "search": "Search",
+    "address": "Deposit Address"
+  }
+}
