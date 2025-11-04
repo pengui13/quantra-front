@@ -194,3 +194,11 @@ export async function getAddress(setDepo, symbol, network, setSpinner) {
     onError: (error) => console.error("Fetching address failed", error),
   });
 }
+
+export async function GetPing(setPing) {
+  apiRequest({
+    endpoint: `${BASE_URL}auth/ping/`,
+    onSuccess: (jsonData) => setPing(jsonData?.message === "pong"),
+    onError: () => setPing(false),
+  });
+}

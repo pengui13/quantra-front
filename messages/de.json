@@ -5,7 +5,9 @@
     "about": "Über uns",
     "contact": "Kontakt",
     "login": "Anmelden",
-    "signup": "Registrieren"
+    "signup": "Registrieren",
+    "logout"  : "Abmelden"
+
   },
   "deposit": {
     "header": { "title": "Einzahlungsdetails" },
