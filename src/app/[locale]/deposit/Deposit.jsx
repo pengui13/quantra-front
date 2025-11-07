@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { getAddress, DepositPortfolio } from "../../../../api/ApiWrapper";
 import { QRCodeSVG } from "qrcode.react";
 import { Tooltip } from "react-tooltip";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-
 import {
   ChevronDown,
   Search,
@@ -18,76 +17,104 @@ import {
   Check as CheckIcon,
 } from "lucide-react";
 
+/* --- Utils --------------------------------------------------------------- */
+const shortAddress = (addr) => {
+  if (!addr) return "";
+  const s = String(addr);
+  return s.length <= 10 ? s : `${s.slice(0, 7)}…${s.slice(-7)}`;
+};
+
+const toNumber = (v) => {
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
+/* --- Component ----------------------------------------------------------- */
 export default function Deposit() {
   const t = useTranslations("deposit");
   const locale = useLocale() || "de-DE";
-  const nf = new Intl.NumberFormat(locale, { maximumFractionDigits: 8 });
-
+  const nf = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 8 }),
+    [locale]
+  );
   const nbsp = "\u00A0";
-  const formatAmount = (v) => {
-    const n = Number(v);
-    if (Number.isNaN(n)) return v;
-    // drop trailing zeros up to 8 decimals, then format in locale
-    const trimmed = parseFloat(n.toFixed(8));
-    return nf.format(trimmed);
-  };
 
+  const formatAmount = useCallback(
+    (v) => {
+      const n = toNumber(v);
+      if (n === undefined) return String(v ?? "");
+      const trimmed = parseFloat(n.toFixed(8));
+      return nf.format(trimmed);
+    },
+    [nf]
+  );
+
+  /* search param */
   const searchParams = useSearchParams();
+  const deepLinkSymbol = searchParams.get("key") ?? undefined;
 
+  /* state */
   const [coins, setCoins] = useState([]);
   const [selectedSymbol, setSelectedSymbol] = useState("BTC");
-  const [availableNetworks, setAvailableNetworks] = useState([]);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(true);
-
   const [coinMenuOpen, setCoinMenuOpen] = useState(false);
   const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState(false);
 
-  /* data */
+  /* data: load portfolio once */
   useEffect(() => {
-    DepositPortfolio(setCoins);
+    DepositPortfolio((list) => setCoins(Array.isArray(list) ? list : []));
   }, []);
 
+  /* initialize symbol from URL or first coin once coins arrive */
   useEffect(() => {
-    const key = searchParams.get("key");
-    if (key) setSelectedSymbol(key);
-  }, [searchParams]);
+    if (!coins.length) return;
+    setSelectedSymbol((curr) => deepLinkSymbol || curr || coins[0].symbol);
+  }, [coins, deepLinkSymbol]);
 
+  /* derived coin + networks */
+  const selectedCoin = useMemo(
+    () => coins.find((c) => c.symbol === selectedSymbol) || null,
+    [coins, selectedSymbol]
+  );
+
+  const availableNetworks = selectedCoin?.networks ?? [];
+
+  /* choose first available network when coin changes */
   useEffect(() => {
-    if (coins.length > 0 && coins[0]?.symbol) {
-      setSelectedSymbol((curr) => curr || coins[0].symbol);
+    if (availableNetworks.length) {
+      setSelectedNetwork((prev) => {
+        const stillExists = prev && availableNetworks.some((n) => n.name === prev.name);
+        return stillExists ? prev : availableNetworks[0];
+      });
+    } else {
+      setSelectedNetwork(null);
     }
-  }, [coins]);
-
-  useEffect(() => {
-    const chosen = coins.find((c) => c.symbol === selectedSymbol);
-    setAvailableNetworks(chosen?.networks || []);
-  }, [selectedSymbol, coins]);
-
-  useEffect(() => {
-    if (availableNetworks.length > 0) setSelectedNetwork(availableNetworks[0]);
   }, [availableNetworks]);
 
+  /* fetch deposit address when symbol or network changes */
   useEffect(() => {
-    if (selectedNetwork?.name && selectedSymbol) {
-      setCopied(false);
-      getAddress(setAddress, selectedSymbol, selectedNetwork.name, setLoading);
-    }
-  }, [selectedNetwork, selectedSymbol]);
+    if (!selectedNetwork?.name || !selectedSymbol) return;
+    setCopied(false);
+    getAddress(setAddress, selectedSymbol, selectedNetwork.name, setLoading);
+  }, [selectedNetwork?.name, selectedSymbol]);
 
+  /* filtering */
   const filteredCoins = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return coins;
     return coins.filter(
       (c) =>
-        c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+        c.symbol.toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q)
     );
   }, [coins, query]);
 
-  const handleCopy = async () => {
+  /* copy full address, show short on screen */
+  const handleCopy = useCallback(async () => {
     if (!address) return;
     try {
       if (navigator?.clipboard?.writeText) {
@@ -105,13 +132,15 @@ export default function Deposit() {
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {}
-  };
+    } catch {
+      /* ignore */
+    }
+  }, [address]);
 
   return (
     <div className="w-full">
       {/* Outer card */}
-      <div className="relative rounded-3xl bg-bkg p-6 md:p-8 border border-white/5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)]">
+      <div className="relative max-w-5xl rounded-3xl bg-bkg p-6 md:p-8 border border-white/5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.5)]">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl md:text-[28px] font-semibold text-white">
@@ -181,13 +210,12 @@ export default function Deposit() {
                     className="w-full bg-transparent outline-none text-sm text-white placeholder:text-gr"
                   />
                 </div>
-                <div className="max-h-72 overflow-y-auto divide-y divide-white/5">
+                <div className="max-h-72 overflow-y-auto">
                   {filteredCoins.map((coin) => (
                     <button
                       key={coin.symbol}
                       onClick={() => {
                         setSelectedSymbol(coin.symbol);
-                        setAvailableNetworks(coin.networks);
                         setCoinMenuOpen(false);
                       }}
                       className="w-full px-3 py-2.5 hover:bg-root-green-8/20 transition flex items-center gap-2 text-left"
@@ -261,7 +289,7 @@ export default function Deposit() {
           )}
         </div>
 
-        {/* Content – one col until xl, then split */}
+        {/* Content */}
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(300px,360px)_1fr]">
           {/* Left: QR & address */}
           <div className="rounded-2xl bg-log-bkg p-4 md:p-5 border border-white/10">
@@ -294,10 +322,10 @@ export default function Deposit() {
                     <span className="text-xs">{copied ? "Copied" : "Copy"}</span>
                   </button>
                   <span
-                    className="flex-1 truncate text-sm font-medium text-white/90"
+                    className="flex-1 truncate text-sm font-medium text-white/90 font-mono"
                     title={address}
                   >
-                    {address}
+                    {shortAddress(address)}
                   </span>
                 </div>
               </div>
@@ -329,18 +357,7 @@ export default function Deposit() {
                   </>
                 }
               />
-              <GlassStat
-                label={t("stats.eta.label")}
-                value={
-                  <>
-                    {formatAmount(selectedNetwork.min_deposit_time)}
-                    {nbsp}
-                    <span className="text-white/70">
-                      {t("stats.minutes.suffix")}
-                    </span>
-                  </>
-                }
-              />
+  
             </div>
           )}
         </div>
@@ -351,7 +368,7 @@ export default function Deposit() {
   );
 }
 
-/* Stat tile: label flexes, value never wraps */
+/* Stat tile */
 function GlassStat({ label, value }) {
   return (
     <div className="rounded-2xl bg-white/5 backdrop-blur border border-white/10 px-4 py-3">
