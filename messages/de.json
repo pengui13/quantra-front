@@ -6,9 +6,9 @@
     "contact": "Kontakt",
     "login": "Anmelden",
     "signup": "Registrieren",
-    "logout"  : "Abmelden"
-
+    "logout": "Abmelden"
   },
+
   "deposit": {
     "header": { "title": "Einzahlungsdetails" },
     "actions": {
@@ -28,10 +28,45 @@
     },
     "stats": {
       "minDeposit": { "label": "Mindesteinzahlung" },
-      "arrivalAfter": { "label": "Gutschrift nach" },
+      "arrivalAfter": { "label": "Gutgeschrieben nach" },
       "confirmations": { "suffix": "Bestätigungen" },
       "eta": { "label": "Geschätzte Zeit" },
       "minutes": { "suffix": "Min." }
     }
+  },
+
+  "withdraw": {
+    "header": { "title": "Guthaben auszahlen" },
+    "actions": {
+      "deposit": "Einzahlen",
+      "withdraw": "Auszahlen"
+    },
+    "selectors": {
+      "currency": { "label": "Währung wählen" },
+      "network": { "label": "Netzwerk wählen" }
+    },
+    "inputs": {
+      "search": { "placeholder": "Suchen" }
+    },
+    "amount": "Betrag",
+    "wallet": "Wallet-Adresse",
+    "insuffFundsDescr": "Unzureichendes Guthaben für diese Auszahlung.",
+    "invAddress": "Ungültige Adresse",
+    "withdrawal": "Auszahlen",
+    "myTemps": "Meine Vorlagen",
+    "stats": {
+      "minWithdrawal": { "label": "Mindestbetrag für Auszahlung" },
+      "fee": { "label": "Netzwerkgebühr" }
+    },
+    "txFailed": "Transaktion fehlgeschlagen",
+    "repAg": "Erneut versuchen",
+    "currentlyInProcess": "Ihre Auszahlung wird verarbeitet",
+    "templateName(opt)": "Vorlagenname (optional)",
+    "saveAsTemp": "Als Vorlage speichern",
+    "continuewSaving": "Mit dem Speichern fortfahren",
+    "delete": "Löschen",
+    "areUsuredeltemp": "Sind Sie sicher, dass Sie diese Vorlage löschen möchten?",
+    "cancel": "Abbrechen",
+    "apply": "Anwenden"
   }
 }
