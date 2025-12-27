@@ -21,7 +21,6 @@ import {
 
 const Decimal = require("decimal.js");
 
-/* --- Theme like Deposit -------------------------------------------------- */
 const ACCENT = "#2CA8B4";
 const BG_PAGE = "#0b0b0e";
 const BG_PANEL = "#101217";

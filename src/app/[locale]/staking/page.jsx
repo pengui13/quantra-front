@@ -19,6 +19,7 @@ import {
   Wallet,
   ArrowUpDown,
   CalendarDays,
+  TrendingUp,
 } from "lucide-react";
 
 function formatTimestamp(isoTimestamp) {
@@ -38,40 +39,40 @@ const Dropdown = ({
   handleUnStakeButton,
 }) => (
   <div
-    className={`absolute bg-bkg rounded-xl shadow-lg ${
+    className={`absolute bg-black rounded-lg border border-[#36C6E0]/20 shadow-2xl ${
       isVisible ? "block" : "hidden"
     }`}
     style={{ zIndex: 1000 }}
     onMouseLeave={onMouseLeave}
   >
-    <ul className="p-2 w-[148px]">
+    <ul className="p-2 w-[160px]">
       <li
         onClick={() => handleStakeButton(symbol)}
-        className="hover:bg-root-green-8 rounded-lg flex flex-col items-start cursor-pointer"
+        className="hover:bg-[#36C6E0]/10 rounded-lg flex flex-col items-start cursor-pointer transition-colors"
       >
-        <span className="font-medium text-bl px-4 py-2">Stake</span>
+        <span className="font-medium text-white px-4 py-2 text-sm">Stake</span>
       </li>
       <li
         onClick={() => handleUnStakeButton(symbol)}
-        className="hover:bg-root-green-8 rounded-lg flex flex-col items-start cursor-pointer"
+        className="hover:bg-[#36C6E0]/10 rounded-lg flex flex-col items-start cursor-pointer transition-colors"
       >
-        <span className="font-medium text-bl px-4 py-2">Unstake</span>
+        <span className="font-medium text-white px-4 py-2 text-sm">Unstake</span>
       </li>
       <Link href={`/deposit?key=${symbol}`}>
-        <li className="hover:bg-root-green-8 rounded-lg flex flex-col items-start cursor-pointer">
-          <span className="font-medium text-bl px-4 py-2">Deposit</span>
+        <li className="hover:bg-[#36C6E0]/10 rounded-lg flex flex-col items-start cursor-pointer transition-colors">
+          <span className="font-medium text-white px-4 py-2 text-sm">Deposit</span>
         </li>
       </Link>
       <Link href={`/spot?key=${symbol}`}>
-        <li className="hover:bg-root-green-8 rounded-lg flex flex-col items-start cursor-pointer">
-          <span className="font-medium text-bl px-4 py-2">Go To Market</span>
+        <li className="hover:bg-[#36C6E0]/10 rounded-lg flex flex-col items-start cursor-pointer transition-colors">
+          <span className="font-medium text-white px-4 py-2 text-sm">Go To Market</span>
         </li>
       </Link>
     </ul>
   </div>
 );
 
-export default function StakingPage({ balance = { balance: { staked_balance: 1 } } }) {
+export default function StakingPage({ balance = { staked_balance: 0 } }) {
   const [stakeAssets, setStakeAssets] = useState([]);
   const [visibleDropdownIndex, setVisibleDropdownIndex] = useState(null);
   const [reward, setReward] = useState("");
@@ -100,193 +101,230 @@ export default function StakingPage({ balance = { balance: { staked_balance: 1 }
   };
 
   return (
-    <div className="bg-log-bkg flex flex-col items-center justify-center mt-[60px]">
+    <div className="bg-black min-h-screen">
       <Head>
         <meta name="robots" content="noindex" />
       </Head>
-      <div className="flex max-w-[1160px] px-4 w-full flex-col py-[60px] items-center justify-center">
-        <div className="flex flex-col w-full gap-5">
-          {/* Header */}
-          <div className="flex flex-col gap-2">
-            <h5 className="font-semibold text-2xl text-bl flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-root-green" />
-              Staking
-            </h5>
+      <div className="flex max-w-[1440px] px-4 w-full flex-col py-20 items-center justify-center mx-auto gap-8">
+        {/* Header */}
+        <div className="flex flex-col w-full gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-[#36C6E0]/20 rounded-lg border border-[#36C6E0]/50">
+              <TrendingUp className="w-6 h-6 text-[#36C6E0]" />
+            </div>
+            <h1 className="font-bold text-3xl text-white">Staking</h1>
           </div>
+          <p className="text-gray-400 text-sm">Earn rewards by staking your crypto assets</p>
+        </div>
 
-          {/* Summary */}
-          <div className="w-full bg-bkg rounded-xl px-5 py-3">
-            <div className="flex md:justify-between flex-col md:flex-row gap-4 items-start md:items-center w-full">
-              <div className="flex md:w-auto w-full items-center justify-between md:justify-normal md:gap-11">
-                <div className="flex flex-col justify-center items-start">
-                  <span className="text-gr text-sm font-semibold flex items-center gap-1">
-                    <Wallet className="w-4 h-4" /> Earnings
-                  </span>
-                  <span className="font-semibold text-sm text-bl">
-                    {balance.staked_balance}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-gr text-sm font-semibold flex items-center gap-1">
-                    <Coins className="w-4 h-4" /> Total Rewards
-                  </span>
-                  <span className="font-semibold text-sm text-bl">
-                    {parseFloat(reward).toFixed(2)} USD
-                  </span>
-                </div>
-              </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          {/* Total Staked Balance */}
+          <div className="bg-black rounded-xl border border-[#36C6E0]/20 p-6 hover:border-[#36C6E0]/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium flex items-center gap-2">
+                <Wallet className="w-4 h-4" /> Total Staked
+              </span>
+              <Wallet className="w-5 h-5 text-[#36C6E0]" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-bold text-2xl text-white">
+                {balance.staked_balance || "0"} USD
+              </span>
+              <span className="text-xs text-gray-500">Current staking balance</span>
             </div>
           </div>
 
-          {/* Assets */}
-          <div className="w-full rounded-2xl gap-3 bg-bkg px-5 py-6 flex flex-col items-start justify-center">
-            <h5 className="text-bl text-xl text-left font-medium flex items-center gap-2">
-              <Coins className="w-5 h-5 text-root-green" /> Staking Assets
-            </h5>
+          {/* Total Rewards */}
+          <div className="bg-black rounded-xl border border-[#36C6E0]/20 p-6 hover:border-[#36C6E0]/50 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-gray-400 text-sm font-medium flex items-center gap-2">
+                <Coins className="w-4 h-4" /> Total Rewards
+              </span>
+              <Coins className="w-5 h-5 text-[#36C6E0]" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-bold text-2xl text-white">
+                {parseFloat(reward || "0").toFixed(2)} USD
+              </span>
+              <span className="text-xs text-gray-500">Lifetime rewards earned</span>
+            </div>
+          </div>
+        </div>
 
-            {/* Mobile Cards */}
-            <div className="flex items-center overflow-x-auto w-full overflow-y-hidden lg:hidden gap-3">
-              {stakeAssets.map((item, index) => {
-                const network = item.networks?.[0] || {};
-                return (
-                  <div
-                    className="min-w-[300px] p-4 flex flex-col items-center bg-log-bkg rounded-2xl justify-center w-full gap-3"
-                    key={index}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          width={28}
-                          height={28}
-                          src={`/assets/${item.symbol.toLowerCase()}.png`}
-                          alt={item.symbol}
-                        />
-                        <span className="font-semibold text-sm text-bl">{item.symbol}</span>
-                      </div>
-                      <div
-                        className="relative"
-                        onMouseEnter={() => handleMouseEnter(index)}
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        <div className="cursor-pointer">
-                          <MoreVertical className="w-5 h-5 text-white" />
-                        </div>
-                        {visibleDropdownIndex === index && (
-                          <Dropdown
-                            isVisible={visibleDropdownIndex === index}
-                            onMouseLeave={handleMouseLeave}
-                            symbol={item.symbol}
-                            handleStakeButton={handleStakeButton}
-                            handleUnStakeButton={handleUnStakeButton}
-                          />
-                        )}
+        {/* Staking Assets */}
+        <div className="w-full rounded-2xl border border-[#36C6E0]/20 bg-black p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-[#36C6E0]/20 rounded-lg">
+              <Coins className="w-5 h-5 text-[#36C6E0]" />
+            </div>
+            <h2 className="text-white text-xl font-semibold">Staking Assets</h2>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="flex items-center overflow-x-auto w-full overflow-y-hidden lg:hidden gap-3 pb-2">
+            {stakeAssets.map((item, index) => {
+              const network = item.networks?.[0] || {};
+              return (
+                <div
+                  className="min-w-[300px] p-5 flex flex-col items-start bg-black rounded-xl justify-start w-full gap-4 border border-[#36C6E0]/20 hover:border-[#36C6E0]/50 transition-colors"
+                  key={index}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        width={36}
+                        height={36}
+                        className="rounded-full"
+                        src={`/assets/${item.symbol.toLowerCase()}.png`}
+                        alt={item.symbol}
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm text-white">{item.symbol}</span>
+                        <span className="text-xs text-gray-500">{item.full_name}</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between w-full">
-                      Estimated APR
-                      <span className="text-root-green font-semibold text-sm">
-                        {network.apr_low?.toFixed(2)}-{network.apr_high?.toFixed(2)} %
+                    <div
+                      className="relative"
+                      onMouseEnter={() => handleMouseEnter(index)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <button className="p-2 hover:bg-[#36C6E0]/10 rounded-lg transition-colors">
+                        <MoreVertical className="w-5 h-5 text-[#36C6E0]/70" />
+                      </button>
+                      {visibleDropdownIndex === index && (
+                        <Dropdown
+                          isVisible={visibleDropdownIndex === index}
+                          onMouseLeave={handleMouseLeave}
+                          symbol={item.symbol}
+                          handleStakeButton={handleStakeButton}
+                          handleUnStakeButton={handleUnStakeButton}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 w-full text-sm">
+                    <div>
+                      <p className="text-gray-500 text-xs font-medium mb-1">Estimated APR</p>
+                      <span className="text-emerald-400 font-bold text-sm">
+                        {network.apr_low?.toFixed(2)}-{network.apr_high?.toFixed(2)}%
                       </span>
                     </div>
-                    <div className="flex items-center justify-between w-full">
-                      Staked Balance
-                      <span className="text-bl font-semibold text-sm">
+                    <div>
+                      <p className="text-gray-500 text-xs font-medium mb-1">Est. Value</p>
+                      <span className="text-white font-bold text-sm">
+                        ${item.value ? parseFloat(item.value).toFixed(2) : "0.00"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full border-t border-[#36C6E0]/10 pt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-500 text-xs">Staked Balance</span>
+                      <span className="text-white font-semibold text-sm">
                         {item.quantity || 0} {item.symbol}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between w-full">
-                      Estimated Value
-                      <span className="text-bl font-semibold text-sm">
-                        {item.value ? parseFloat(item.value).toFixed(2) : "0.00"} USD
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between w-full">
-                      Total Rewards
-                      <span className="text-bl font-semibold text-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-500 text-xs">Total Rewards</span>
+                      <span className="text-[#36C6E0] font-semibold text-sm">
                         {item.total_reward || 0} {item.symbol}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between w-full">
-                      Available Balance
-                      <span className="text-bl font-semibold text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 text-xs">Available Balance</span>
+                      <span className="text-white font-semibold text-sm">
                         {item.avail || 0} {item.symbol}
                       </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
+          </div>
 
-            {/* Desktop Table */}
-            <table className="w-full hidden lg:table">
-              <thead className="header-spacing">
-                <tr className="h-[50px] mb-2 text-sm">
-                  <th className="text-left text-gr font-medium text-xs">Asset</th>
-                  <th className="text-left text-gr font-medium text-xs">Estimated APR</th>
-                  <th className="text-left text-gr font-medium text-xs">Staked Balance</th>
-                  <th className="text-left text-gr font-medium text-xs">Estimated Value</th>
-                  <th className="text-left text-gr font-medium text-xs">Total Rewards</th>
-                  <th className="text-left text-gr font-medium text-xs">Available Balance</th>
+          {/* Desktop Table */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#36C6E0]/10">
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Asset</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Estimated APR</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Staked Balance</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Est. Value</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Total Rewards</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4">Available Balance</th>
+                  <th className="text-left text-gray-400 font-semibold text-sm py-4 px-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {stakeAssets.map((item, index) => {
                   const network = item.networks?.[0] || {};
                   return (
-                    <tr className="h-[45px]" key={index}>
-                      <td>
-                        <div className="flex items-center gap-2">
+                    <tr
+                      key={index}
+                      className="border-b border-[#36C6E0]/10 hover:bg-[#36C6E0]/5 transition-colors"
+                    >
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
                           <Image
-                            width={28}
-                            height={28}
+                            width={36}
+                            height={36}
+                            className="rounded-full"
                             src={`/assets/${item.symbol.toLowerCase()}.png`}
                             alt={item.symbol}
                           />
-                          <span className="font-semibold text-sm text-bl">{item.symbol}</span>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm text-white">{item.symbol}</span>
+                            <span className="text-xs text-gray-500">{item.full_name}</span>
+                          </div>
                         </div>
                       </td>
-                      <td className="text-left">
-                        <span className="text-root-green font-semibold text-sm">
-                          {network.apr_low?.toFixed(2)}-{network.apr_high?.toFixed(2)} %
+                      <td className="py-4 px-4">
+                        <span className="text-emerald-400 font-bold text-sm">
+                          {network.apr_low?.toFixed(2)}-{network.apr_high?.toFixed(2)}%
                         </span>
                       </td>
-                      <td className="text-left">
-                        <span className="text-bl font-semibold text-sm">
+                      <td className="py-4 px-4">
+                        <span className="text-white font-semibold text-sm">
                           {item.quantity || 0} {item.symbol}
                         </span>
                       </td>
-                      <td className="text-left">
-                        <span className="text-bl font-semibold text-sm">
-                          {item.value ? parseFloat(item.value).toFixed(2) : "0.00"} USD
+                      <td className="py-4 px-4">
+                        <span className="text-white font-semibold text-sm">
+                          ${item.value ? parseFloat(item.value).toFixed(2) : "0.00"}
                         </span>
                       </td>
-                      <td className="text-left">
-                        <span className="text-bl font-semibold text-sm">
+                      <td className="py-4 px-4">
+                        <span className="text-[#36C6E0] font-semibold text-sm">
                           {item.total_reward || 0} {item.symbol}
                         </span>
                       </td>
-                      <td className="text-left">
-                        <span className="text-bl font-semibold text-sm">
+                      <td className="py-4 px-4">
+                        <span className="text-white font-semibold text-sm">
                           {item.avail || 0} {item.symbol}
                         </span>
                       </td>
-                      <td
-                        className="relative"
-                        onMouseEnter={() => handleMouseEnter(index)}
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        <div className="cursor-pointer">
-                          <MoreVertical className="w-5 h-5 text-white" />
+                      <td className="py-4 px-4">
+                        <div
+                          className="relative"
+                          onMouseEnter={() => handleMouseEnter(index)}
+                          onMouseLeave={handleMouseLeave}
+                        >
+                          <button className="p-2 hover:bg-[#36C6E0]/10 rounded-lg transition-colors">
+                            <MoreVertical className="w-5 h-5 text-[#36C6E0]/70" />
+                          </button>
+                          {visibleDropdownIndex === index && (
+                            <Dropdown
+                              isVisible={visibleDropdownIndex === index}
+                              onMouseLeave={handleMouseLeave}
+                              symbol={item.symbol}
+                              handleStakeButton={handleStakeButton}
+                              handleUnStakeButton={handleUnStakeButton}
+                            />
+                          )}
                         </div>
-                        {visibleDropdownIndex === index && (
-                          <Dropdown
-                            isVisible={visibleDropdownIndex === index}
-                            onMouseLeave={handleMouseLeave}
-                            symbol={item.symbol}
-                            handleStakeButton={handleStakeButton}
-                            handleUnStakeButton={handleUnStakeButton}
-                          />
-                        )}
                       </td>
                     </tr>
                   );

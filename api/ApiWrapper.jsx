@@ -93,6 +93,26 @@ async function apiRequest({
     onError({ message: error.message });
   }
 }
+export async function SetFiat({ asset_id }) {
+  if (!asset_id) {
+    throw new Error("asset_id is required");
+  }
+
+  return apiRequest({
+    endpoint: `${BASE_URL}auth/set_fiat/`,
+    method: "POST",
+    body: { asset_id },
+
+    onSuccess: (data) => {
+      console.log("Preferred fiat updated:", data);
+    },
+
+    onError: (error) => {
+      console.error("Failed to set fiat currency", error);
+    },
+  });
+}
+
 
 export async function registerUser(email, password, onSuccess, onError) {
   return apiRequest({
@@ -136,6 +156,28 @@ export async function DepositPortfolio(setAssets) {
   apiRequest({
     endpoint: `${BASE_URL}assets/`,
     onSuccess: (jsonData) => setAssets(jsonData),
+    onError: (error) => console.error("Fetching assets failed", error),
+  });
+}
+
+export async function GetAssets(setAssets) {
+  apiRequest({
+    endpoint: `${BASE_URL}assets/?section=fiat`,
+    onSuccess: (jsonData) => setAssets(jsonData),
+    onError: (error) => console.error("Fetching assets failed", error),
+  });
+}
+export async function FetchChartData(setData) {
+  apiRequest({
+    endpoint: `${BASE_URL}assets/?section=fiat`,
+    onSuccess: (jsonData) => setData(jsonData),
+    onError: (error) => console.error("Fetching assets failed", error),
+  });
+}
+export async function GetStakedAssets(setData) {
+  apiRequest({
+    endpoint: `${BASE_URL}assets/?section=fiat`,
+    onSuccess: (jsonData) => setData(jsonData),
     onError: (error) => console.error("Fetching assets failed", error),
   });
 }

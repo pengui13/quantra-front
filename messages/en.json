@@ -8,7 +8,26 @@
     "signup": "Sign up",
     "logout": "Log out"
   },
+    "Dashboard": {
+    "asset": "Asset",
+    "allocation": "Allocation",
+    "curr-price": "Current Price",
+    "balance": "Balance",
+    "avail-bal": "Available Balance",
+    "estim-value": "Estimated Value",
+    "Buy": "Buy",
+    "Sell": "Sell",
+    "swap": "Swap",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
 
+
+
+    "estim-value": "Estimated Value",
+    "estim-value": "Estimated Value",
+
+    "logout": "Log out"
+  },
   "deposit": {
     "header": { "title": "Deposit details" },
     "actions": {

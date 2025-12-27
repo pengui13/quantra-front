@@ -5,11 +5,11 @@ import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
-
+import Balance from "./Balance.jsx";
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
 import { loginUser, registerUser } from "../../../api/ApiWrapper";
-
+import CoinModal from "./CoinModal.jsx";
 export default function Header() {
   const t = useTranslations("Header");
   const router = useRouter();
@@ -205,12 +205,6 @@ export default function Header() {
       <div className="flex items-center gap-4">
 
 
-        <button
-          onClick={switchLanguage}
-          className="px-3 py-1 border border-gray-600 rounded-lg text-sm font-medium hover:border-[#36C6E0] hover:text-[#36C6E0] transition"
-        >
-          {currentLocale === "en" ? "EN" : "DE"}
-        </button>
 
         {!isAuthed ? (
           <>
@@ -229,7 +223,15 @@ export default function Header() {
           </>
         ) : (
           <>
+          <Balance />
+          <CoinModal />
        
+        <button
+          onClick={switchLanguage}
+          className="px-3 py-1 border border-gray-600 rounded-lg text-sm font-medium hover:border-[#36C6E0] hover:text-[#36C6E0] transition"
+        >
+          {currentLocale === "en" ? "EN" : "DE"}
+        </button>
             <button
               onClick={handleLogout}
               className="px-5 py-2 bg-white/10 border border-gray-600 rounded-lg font-semibold hover:bg-white/20 transition"
