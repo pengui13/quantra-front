@@ -10,7 +10,9 @@
   --bl: #171717;           /* primary text (dark) */
   --gr: #555555;           /* secondary text */
 }
-
+button{
+  cursor: pointer;
+}
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
