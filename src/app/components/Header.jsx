@@ -10,6 +10,8 @@ import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
 import { loginUser, registerUser } from "../../../api/ApiWrapper";
 import CoinModal from "./CoinModal.jsx";
+import { LogOut, Globe, LayoutDashboard, LogIn, TrendingUp, Shuffle, LogOut as WithdrawIcon } from "lucide-react";
+
 export default function Header() {
   const t = useTranslations("Header");
   const router = useRouter();
@@ -27,7 +29,7 @@ export default function Header() {
     document.documentElement.getAttribute("data-api-online") === "true";
 
   const [apiOnline, setApiOnline] = useState(initialOnline);
-  const [isAuthed, setIsAuthed] = useState(initialOnline); // protected ping => authenticated
+  const [isAuthed, setIsAuthed] = useState(initialOnline);
 
   useEffect(() => {
     const sync = () => {
@@ -66,7 +68,7 @@ export default function Header() {
   const [showSignupPassword2, setShowSignupPassword2] = useState(false);
   const [signupError, setSignupError] = useState("");
   const [signupCode, setSignupCode] = useState("");
-  const [step, setStep] = useState("form"); // "form" | "verify"
+  const [step, setStep] = useState("form");
 
   // switch locale (preserve current route)
   const switchLanguage = () => {
@@ -83,7 +85,6 @@ export default function Header() {
       loginPassword,
       () => {
         setShowLogin(false);
-        // after successful login, force a quick ping to flip UI immediately
         window.dispatchEvent(new CustomEvent("ping:update", { detail: true }));
       },
       () => setLoginError("Invalid credentials, please try again.")
@@ -128,7 +129,7 @@ export default function Header() {
   function clearCookieEverywhere(name) {
     try {
       const expires = "Thu, 01 Jan 1970 00:00:00 GMT";
-      const host = location.hostname; // e.g. localhost or app.dev
+      const host = location.hostname;
       const base = host.replace(/^www\./, "");
       const domains = ["", `; domain=${base}`, `; domain=.${base}`];
       const paths = ["", "; path=/"];
@@ -157,12 +158,10 @@ export default function Header() {
       "refreshToken",
     ];
 
-    // clear storages
     for (const k of keys) {
       try { localStorage.removeItem(k); } catch {}
       try { sessionStorage.removeItem(k); } catch {}
     }
-    // clear any non-HttpOnly cookies
     for (const k of keys) clearCookieEverywhere(k);
   }
 
@@ -177,112 +176,152 @@ export default function Header() {
     } catch {}
     clientSideLogout();
     window.dispatchEvent(new CustomEvent("ping:update", { detail: false }));
-    // optional: router.push(`/${currentLocale}`);
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full flex items-center justify-between px-8 py-6 border-b border-white/10 bg-black/80 backdrop-blur-md z-[1000]">
+    <header className="fixed top-0 left-0 w-full flex items-center justify-center px-8 py-4 border-b border-[#36C6E0]/10 bg-black z-[1000]">
+      {/* Logo - Left */}
       <button
         onClick={() => router.push(`/${currentLocale}`)}
-        className="flex items-center cursor-pointer gap-2 hover:opacity-80 transition"
+        className="absolute left-8 flex items-center cursor-pointer gap-2 hover:opacity-80 transition"
       >
         <Image src="/logo.png" alt="Quantra Logo" width={32} height={32} />
-        <span className="text-xl font-bold tracking-wide">Quantra</span>
+        <span className="text-lg font-bold text-white tracking-wide">Quantra</span>
       </button>
 
-      <nav className="flex gap-6 text-sm font-medium">
-        {["features", "pricing", "about", "contact"].map((key) => (
+      {/* Center Navigation */}
+      {isAuthed && (
+        <nav className="flex items-center gap-8">
           <a
-            key={key}
-            href={`#${key}`}
-            className="relative hover:text-[#36C6E0] after:absolute after:w-0 after:h-[2px] after:bg-[#36C6E0] after:left-0 after:-bottom-1 hover:after:w-full after:transition-all after:duration-300"
+            href={`/${currentLocale}/dashboard`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="Dashboard"
           >
-            {t(key)}
+            <LayoutDashboard className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
           </a>
-        ))}
-      </nav>
 
-      <div className="flex items-center gap-4">
+          <a
+            href={`/${currentLocale}/deposit`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="Deposit"
+          >
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">Deposit</span>
+          </a>
 
+          <a
+            href={`/${currentLocale}/withdraw`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="Withdraw"
+          >
+            <WithdrawIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Withdraw</span>
+          </a>
 
+          <a
+            href={`/${currentLocale}/staking`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="Staking"
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Staking</span>
+          </a>
 
+          <a
+            href={`/${currentLocale}/otc`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="OTC"
+          >
+            <Shuffle className="w-4 h-4" />
+            <span className="hidden sm:inline">OTC</span>
+          </a>
+        </nav>
+      )}
+
+      {/* Right Controls */}
+      <div className="absolute right-8 flex items-center gap-4">
         {!isAuthed ? (
           <>
             <button
               onClick={() => setShowLogin(true)}
-              className="px-4 py-2 border border-gray-600 rounded-lg font-medium hover:border-[#36C6E0] hover:text-[#36C6E0]"
+              className="px-4 py-2 border border-[#36C6E0]/30 rounded-lg font-medium text-white hover:border-[#36C6E0] hover:text-[#36C6E0] transition-colors"
             >
               {t("login")}
             </button>
             <button
               onClick={() => setShowSignup(true)}
-              className="px-5 py-2 bg-[#36C6E0] text-black rounded-lg font-semibold hover:scale-105 hover:shadow-lg hover:shadow-[#36C6E0]/30 transition"
+              className="px-5 py-2 bg-[#36C6E0] text-black rounded-lg font-semibold hover:bg-[#36C6E0]/90 transition-colors"
             >
               {t("signup")}
             </button>
           </>
         ) : (
           <>
-          <Balance />
-          <CoinModal />
-       
-        <button
-          onClick={switchLanguage}
-          className="px-3 py-1 border border-gray-600 rounded-lg text-sm font-medium hover:border-[#36C6E0] hover:text-[#36C6E0] transition"
-        >
-          {currentLocale === "en" ? "EN" : "DE"}
-        </button>
+            <Balance />
+            <CoinModal />
+
+            <button
+              onClick={switchLanguage}
+              className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition-colors flex items-center justify-center"
+              title={currentLocale === "en" ? "Switch to Deutsch" : "Switch to English"}
+            >
+              <Globe className="w-4 h-4 text-[#36C6E0]" />
+            </button>
+
             <button
               onClick={handleLogout}
-              className="px-5 py-2 bg-white/10 border border-gray-600 rounded-lg font-semibold hover:bg-white/20 transition"
+              className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition-colors flex items-center justify-center"
+              title={t("logout", { defaultValue: "Logout" })}
             >
-              {t("logout", { defaultValue: "Logout" })}
+              <LogOut className="w-4 h-4 text-white" />
             </button>
           </>
         )}
-
-        <AnimatePresence>
-          {showSignup && (
-            <RegisterModal
-              showSignup={showSignup}
-              setShowSignup={setShowSignup}
-              signupEmail={signupEmail}
-              setSignupEmail={setSignupEmail}
-              signupPassword={signupPassword}
-              setSignupPassword={setSignupPassword}
-              signupPassword2={signupPassword2}
-              setSignupPassword2={setSignupPassword2}
-              signupCode={signupCode}
-              setSignupCode={setSignupCode}
-              signupError={signupError}
-              setSignupError={setSignupError}
-              handleSignupForm={handleSignupForm}
-              handleVerify={handleVerify}
-              step={step}
-              setStep={setStep}
-              showSignupPassword={showSignupPassword}
-              setShowSignupPassword={setShowSignupPassword}
-              showSignupPassword2={showSignupPassword2}
-              setShowSignupPassword2={setShowSignupPassword2}
-            />
-          )}
-
-          {showLogin && (
-            <LoginModal
-              showLogin={showLogin}
-              setShowLogin={setShowLogin}
-              loginEmail={loginEmail}
-              setLoginEmail={setLoginEmail}
-              loginPassword={loginPassword}
-              setLoginPassword={setLoginPassword}
-              showLoginPassword={showLoginPassword}
-              setShowLoginPassword={setShowLoginPassword}
-              loginError={loginError}
-              handleLogin={handleLogin}
-            />
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showSignup && (
+          <RegisterModal
+            showSignup={showSignup}
+            setShowSignup={setShowSignup}
+            signupEmail={signupEmail}
+            setSignupEmail={setSignupEmail}
+            signupPassword={signupPassword}
+            setSignupPassword={setSignupPassword}
+            signupPassword2={signupPassword2}
+            setSignupPassword2={setSignupPassword2}
+            signupCode={signupCode}
+            setSignupCode={setSignupCode}
+            signupError={signupError}
+            setSignupError={setSignupError}
+            handleSignupForm={handleSignupForm}
+            handleVerify={handleVerify}
+            step={step}
+            setStep={setStep}
+            showSignupPassword={showSignupPassword}
+            setShowSignupPassword={setShowSignupPassword}
+            showSignupPassword2={showSignupPassword2}
+            setShowSignupPassword2={setShowSignupPassword2}
+          />
+        )}
+
+        {showLogin && (
+          <LoginModal
+            showLogin={showLogin}
+            setShowLogin={setShowLogin}
+            loginEmail={loginEmail}
+            setLoginEmail={setLoginEmail}
+            loginPassword={loginPassword}
+            setLoginPassword={setLoginPassword}
+            showLoginPassword={showLoginPassword}
+            setShowLoginPassword={setShowLoginPassword}
+            loginError={loginError}
+            handleLogin={handleLogin}
+          />
+        )}
+      </AnimatePresence>
     </header>
   );
 }

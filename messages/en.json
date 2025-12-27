@@ -20,12 +20,30 @@
     "swap": "Swap",
     "deposit": "Deposit",
     "withdraw": "Withdraw",
+    "logout": "Log out"
+  },
+      "OTC": {
+    "restricted": "Restricted Zone  ",
+    "contact-access": "Contact us to gain access.",
+    "otc": "Quantra OTC Desk",
+    "quantra-otc": "Quantra OTC Desk empowers you to execute large trades with ease and confidence.",
+    "request-quote": "Request a Quote",
+    "compet-price": "Competitive Pricing across Major Cryptopairs",
+    "execute-large": "Connect with our desk to execute large trades with minimal market impact",
+    "become-otc": "Become OTC Client",
+    "quantity": "Quantity",
+    "amount": "Amount",
+    "get-quote": "Get Quote",
+    "buying": "to buy",
+    "selling": "to sell",
 
 
 
-    "estim-value": "Estimated Value",
-    "estim-value": "Estimated Value",
-
+    "Buy": "Buy",
+    "Sell": "Sell",
+    "swap": "Swap",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
     "logout": "Log out"
   },
   "deposit": {

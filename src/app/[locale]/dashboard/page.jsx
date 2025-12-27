@@ -284,7 +284,7 @@ export default function Dashboard({ balance, hiddenBalances, toggleBalances }) {
 
               {balanceData && balanceData.length > 0 ? (
                 <Link href="/withdraw" className="w-full">
-                  <DashButton text={t("withdrawal")} icon="logout" />
+                  <DashButton text={t("withdraw")} icon="logout" />
                 </Link>
               ) : (
                 <Skeleton width="w-full" height="h-[44px]" rounded="rounded-xl" />
@@ -292,12 +292,10 @@ export default function Dashboard({ balance, hiddenBalances, toggleBalances }) {
             </div>
           </div>
 
-          {/* Portfolio Section */}
-          <div className="w-full rounded-2xl bg-black border border-[#36C6E0]/20 p-6">
+            <div className="w-full rounded-2xl bg-black border border-[#36C6E0]/20 p-6">
             <div className="flex flex-col gap-6">
               <h5 className="font-semibold text-white text-xl">Portfolio</h5>
 
-              {/* Mobile View */}
               <div className="flex items-lg:hidden gap-3 overflow-x-auto pb-2">
                 {!hiddenBalances &&
                   portfolioWallet.length > 0 &&
