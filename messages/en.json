@@ -22,6 +22,49 @@
     "withdraw": "Withdraw",
     "logout": "Log out"
   },
+
+
+  "brand": {
+    "ourValues": "At Quantra, our values drive excellence, transparency, and innovation in every decision we make.",
+    "brandIdeology": "Maximizing Rewards",
+    "reliability": "Unmatched Performance & Security",
+    "weAlways": "Real-Time Portfolio Tracking, always up-to-date and reliable",
+    "cooperation": "Seamless User Experience across all devices and platforms",
+    "weAim": "Optimize Your Staking Potential with intelligent tools",
+    "integrity": "Stake with Confidence knowing your assets are protected",
+    "honesty": "Instant Withdrawals, no waiting times, no hidden fees",
+    "vision": "Empower Investors Worldwide with smarter financial solutions",
+    "createYour": "Start Earning Today and watch your crypto grow",
+    "mission": "Simplify Crypto Growth with powerful, intuitive interfaces",
+    "weEmpower": "Take Full Control of Your Assets and maximize returns"
+  },
+
+  "productsServ": {
+    "whatWeOffer": "Quantra offers best-in-class staking solutions, tailored for maximum rewards and financial growth.",
+    "ourProducts": "Smart Allocation Tools to help you make informed decisions",
+    "quantrawallet": "Track Your Earnings Instantly with real-time analytics",
+    "allowsUsers": "Stake, Earn, and Monitor with Ease across all assets",
+    "spot": "Flexible and Secure Trading designed for professionals",
+    "tradeAnytime": "Trade Anytime, Anywhere without limitations",
+    "buynSell": "Buy Crypto Efficiently at the best rates",
+    "buynSellInstant": "Sell with Zero Hassle and full transparency",
+    "quantraCard": "Access Seamless Swaps and instant liquidity",
+    "useQuantra": "Deposit Funds Safely with trusted protocols",
+    "quantraClub": "Exclusive Access to Premium Features for power users",
+    "takeAdvantage": "Maximize Returns Like a Pro with advanced strategies"
+  },
+
+  "aboutUs": {
+    "whoWeAre": "Quantra staking",
+    "about-quantra": "Smart Allocation Tools to grow your portfolio effortlessly",
+    "quantraIsCentralized": "Track Your Earnings Instantly with secure centralized management",
+    "ourMission": "To empower crypto investors with intuitive tools and unmatched rewards",
+    "ourVision": "Build a financial ecosystem where users can stake, earn, and trade confidently",
+    "whyChooseUs": "We combine security, high performance, and ease-of-use for the ultimate crypto experience"
+  },
+
+
+  
       "OTC": {
     "restricted": "Restricted Zone  ",
     "contact-access": "Contact us to gain access.",

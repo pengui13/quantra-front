@@ -10,7 +10,7 @@ import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
 import { loginUser, registerUser } from "../../../api/ApiWrapper";
 import CoinModal from "./CoinModal.jsx";
-import { LogOut, Globe, LayoutDashboard, LogIn, TrendingUp, Shuffle, LogOut as WithdrawIcon } from "lucide-react";
+import { LogOut,BadgeQuestionMark, Globe, LayoutDashboard, LogIn, TrendingUp, Shuffle, LogOut as WithdrawIcon } from "lucide-react";
 
 export default function Header() {
   const t = useTranslations("Header");
@@ -200,7 +200,14 @@ export default function Header() {
             <LayoutDashboard className="w-4 h-4" />
             <span className="hidden sm:inline">Dashboard</span>
           </a>
-
+      <a
+            href={`/${currentLocale}/about-us`}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+            title="About Us"
+          >
+            <BadgeQuestionMark className="w-4 h-4" />
+            <span className="hidden sm:inline">About Us</span>
+          </a>
           <a
             href={`/${currentLocale}/deposit`}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
