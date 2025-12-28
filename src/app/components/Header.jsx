@@ -2,28 +2,36 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import Balance from "./Balance.jsx";
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
-import { loginUser, registerUser } from "../../../api/ApiWrapper";
 import CoinModal from "./CoinModal.jsx";
-import { LogOut,BadgeQuestionMark, Globe, LayoutDashboard, LogIn, TrendingUp, Shuffle, LogOut as WithdrawIcon } from "lucide-react";
+import { loginUser, registerUser } from "../../../api/ApiWrapper";
+import {
+  LogOut,
+  BadgeQuestionMark,
+  Globe,
+  LayoutDashboard,
+  LogIn,
+  TrendingUp,
+  Shuffle,
+  LogOut as WithdrawIcon,
+  List
+} from "lucide-react";
 
 export default function Header() {
   const t = useTranslations("Header");
   const router = useRouter();
   const pathname = usePathname();
 
-  // locale from path (/en/... or /de/...)
   const currentLocale = useMemo(() => {
     if (!pathname) return "en";
     return pathname.split("/")[1] === "de" ? "de" : "en";
   }, [pathname]);
 
-  // ---- API/auth status (from ClientBoot's ping) ----
   const initialOnline =
     typeof document !== "undefined" &&
     document.documentElement.getAttribute("data-api-online") === "true";
@@ -38,21 +46,16 @@ export default function Header() {
       setIsAuthed(ok);
     };
     sync();
-
     const onPing = (e) => {
       if (e && typeof e.detail === "boolean") {
         setApiOnline(e.detail);
         setIsAuthed(e.detail);
-      } else {
-        sync();
-      }
+      } else sync();
     };
-
     window.addEventListener("ping:update", onPing);
     return () => window.removeEventListener("ping:update", onPing);
   }, []);
 
-  // ----- Auth / UI state -----
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
@@ -70,7 +73,6 @@ export default function Header() {
   const [signupCode, setSignupCode] = useState("");
   const [step, setStep] = useState("form");
 
-  // switch locale (preserve current route)
   const switchLanguage = () => {
     const newLocale = currentLocale === "en" ? "de" : "en";
     const pathWithoutLocale = pathname.replace(/^\/(en|de)/, "");
@@ -125,7 +127,6 @@ export default function Header() {
     );
   };
 
-  // ---- Logout helpers (JS-only) ----
   function clearCookieEverywhere(name) {
     try {
       const expires = "Thu, 01 Jan 1970 00:00:00 GMT";
@@ -133,7 +134,6 @@ export default function Header() {
       const base = host.replace(/^www\./, "");
       const domains = ["", `; domain=${base}`, `; domain=.${base}`];
       const paths = ["", "; path=/"];
-
       for (const d of domains) {
         for (const p of paths) {
           document.cookie = `${name}=; expires=${expires}${p}${d}`;
@@ -157,7 +157,6 @@ export default function Header() {
       "accessToken",
       "refreshToken",
     ];
-
     for (const k of keys) {
       try { localStorage.removeItem(k); } catch {}
       try { sessionStorage.removeItem(k); } catch {}
@@ -165,7 +164,6 @@ export default function Header() {
     for (const k of keys) clearCookieEverywhere(k);
   }
 
-  // ---- Logout: remove access/refresh tokens from cookies + storages; try server logout
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", {
@@ -178,157 +176,117 @@ export default function Header() {
     window.dispatchEvent(new CustomEvent("ping:update", { detail: false }));
   };
 
+  const [balanceOpen, setBalanceOpen] = useState(false);
+
   return (
-    <header className="fixed top-0 left-0 w-full flex items-center justify-center px-8 py-4 border-b border-[#36C6E0]/10 bg-black z-[1000]">
-      {/* Logo - Left */}
-      <button
-        onClick={() => router.push(`/${currentLocale}`)}
-        className="absolute left-8 flex items-center cursor-pointer gap-2 hover:opacity-80 transition"
-      >
-        <Image src="/logo.png" alt="Quantra Logo" width={32} height={32} />
-        <span className="text-lg font-bold text-white tracking-wide">Quantra</span>
-      </button>
+    <header className="fixed top-0 left-0 w-full z-[1000] bg-black border-b border-[#36C6E0]/10">
+      <div className="max-w-[1280px] mx-auto flex items-center justify-between px-6 py-4">
+        {/* Logo */}
+        <button
+          onClick={() => router.push(`/${currentLocale}`)}
+          className="flex items-center gap-2 hover:opacity-80 transition"
+        >
+          <Image src="/logo.png" alt="Quantra Logo" width={32} height={32} />
+          <span className="text-lg font-bold text-white tracking-wide">Quantra</span>
+        </button>
 
-      {/* Center Navigation */}
-      {isAuthed && (
-        <nav className="flex items-center gap-8">
-          <a
-            href={`/${currentLocale}/dashboard`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="Dashboard"
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </a>
-      <a
-            href={`/${currentLocale}/about-us`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="About Us"
-          >
-            <BadgeQuestionMark className="w-4 h-4" />
-            <span className="hidden sm:inline">About Us</span>
-          </a>
-          <a
-            href={`/${currentLocale}/deposit`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="Deposit"
-          >
-            <LogIn className="w-4 h-4" />
-            <span className="hidden sm:inline">Deposit</span>
-          </a>
-
-          <a
-            href={`/${currentLocale}/withdraw`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="Withdraw"
-          >
-            <WithdrawIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Withdraw</span>
-          </a>
-
-          <a
-            href={`/${currentLocale}/staking`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="Staking"
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span className="hidden sm:inline">Staking</span>
-          </a>
-
-          <a
-            href={`/${currentLocale}/otc`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
-            title="OTC"
-          >
-            <Shuffle className="w-4 h-4" />
-            <span className="hidden sm:inline">OTC</span>
-          </a>
-        </nav>
-      )}
-
-      {/* Right Controls */}
-      <div className="absolute right-8 flex items-center gap-4">
-        {!isAuthed ? (
-          <>
-            <button
-              onClick={() => setShowLogin(true)}
-              className="px-4 py-2 border border-[#36C6E0]/30 rounded-lg font-medium text-white hover:border-[#36C6E0] hover:text-[#36C6E0] transition-colors"
-            >
-              {t("login")}
-            </button>
-            <button
-              onClick={() => setShowSignup(true)}
-              className="px-5 py-2 bg-[#36C6E0] text-black rounded-lg font-semibold hover:bg-[#36C6E0]/90 transition-colors"
-            >
-              {t("signup")}
-            </button>
-          </>
-        ) : (
-          <>
-            <Balance />
-            <CoinModal />
-
-            <button
-              onClick={switchLanguage}
-              className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition-colors flex items-center justify-center"
-              title={currentLocale === "en" ? "Switch to Deutsch" : "Switch to English"}
-            >
-              <Globe className="w-4 h-4 text-[#36C6E0]" />
-            </button>
-
-            <button
-              onClick={handleLogout}
-              className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition-colors flex items-center justify-center"
-              title={t("logout", { defaultValue: "Logout" })}
-            >
-              <LogOut className="w-4 h-4 text-white" />
-            </button>
-          </>
+        {/* Center Navigation */}
+        {isAuthed && (
+          <nav className="flex items-center gap-6">
+            <NavItem href={`/${currentLocale}/dashboard`} icon={<LayoutDashboard />} label="Dashboard" />
+            <NavItem href={`/${currentLocale}/about-us`} icon={<BadgeQuestionMark />} label="About Us" />
+            <NavItem href={`/${currentLocale}/deposit`} icon={<LogIn />} label="Deposit" />
+            <NavItem href={`/${currentLocale}/withdraw`} icon={<WithdrawIcon />} label="Withdraw" />
+            <NavItem href={`/${currentLocale}/staking`} icon={<TrendingUp />} label="Staking" />
+            <NavItem href={`/${currentLocale}/otc`} icon={<Shuffle />} label="OTC" />
+          </nav>
         )}
+
+        {/* Right Controls */}
+        <div className="flex items-center gap-4">
+          {!isAuthed ? (
+            <>
+              <button onClick={() => setShowLogin(true)} className="px-4 py-2 border border-[#36C6E0]/30 rounded-lg text-white hover:border-[#36C6E0] hover:text-[#36C6E0] transition">
+                {t("login")}
+              </button>
+              <button onClick={() => setShowSignup(true)} className="px-5 py-2 bg-[#36C6E0] text-black rounded-lg font-semibold hover:bg-[#36C6E0]/90 transition">
+                {t("signup")}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Balance Dropdown */}
+              <div className="relative" onMouseEnter={() => setBalanceOpen(true)} onMouseLeave={() => setBalanceOpen(false)}>
+                <Balance />
+                <AnimatePresence>
+                  {balanceOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-52 bg-[#0d0d0d] border border-gray-700 rounded-lg shadow-lg p-3 flex flex-col gap-2 z-50"
+                    >
+                      <a
+                        href={`/${currentLocale}/transactions`}
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-[#36C6E0]/10 rounded text-white text-sm"
+                      >
+                        <List className="w-4 h-4" />
+                        <span>Transactions</span>
+                      </a>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <CoinModal />
+
+              <button onClick={switchLanguage} className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition flex items-center justify-center">
+                <Globe className="w-4 h-4 text-[#36C6E0]" />
+              </button>
+
+              <button onClick={handleLogout} className="p-2 border border-[#36C6E0]/30 rounded-lg hover:border-[#36C6E0] hover:bg-[#36C6E0]/10 transition flex items-center justify-center">
+                <LogOut className="w-4 h-4 text-white" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Modals */}
       <AnimatePresence>
-        {showSignup && (
-          <RegisterModal
-            showSignup={showSignup}
-            setShowSignup={setShowSignup}
-            signupEmail={signupEmail}
-            setSignupEmail={setSignupEmail}
-            signupPassword={signupPassword}
-            setSignupPassword={setSignupPassword}
-            signupPassword2={signupPassword2}
-            setSignupPassword2={setSignupPassword2}
-            signupCode={signupCode}
-            setSignupCode={setSignupCode}
-            signupError={signupError}
-            setSignupError={setSignupError}
-            handleSignupForm={handleSignupForm}
-            handleVerify={handleVerify}
-            step={step}
-            setStep={setStep}
-            showSignupPassword={showSignupPassword}
-            setShowSignupPassword={setShowSignupPassword}
-            showSignupPassword2={showSignupPassword2}
-            setShowSignupPassword2={setShowSignupPassword2}
-          />
-        )}
-
-        {showLogin && (
-          <LoginModal
-            showLogin={showLogin}
-            setShowLogin={setShowLogin}
-            loginEmail={loginEmail}
-            setLoginEmail={setLoginEmail}
-            loginPassword={loginPassword}
-            setLoginPassword={setLoginPassword}
-            showLoginPassword={showLoginPassword}
-            setShowLoginPassword={setShowLoginPassword}
-            loginError={loginError}
-            handleLogin={handleLogin}
-          />
-        )}
+        {showSignup && <RegisterModal
+          showSignup={showSignup} setShowSignup={setShowSignup}
+          signupEmail={signupEmail} setSignupEmail={setSignupEmail}
+          signupPassword={signupPassword} setSignupPassword={setSignupPassword}
+          signupPassword2={signupPassword2} setSignupPassword2={setSignupPassword2}
+          signupCode={signupCode} setSignupCode={setSignupCode}
+          signupError={signupError} setSignupError={setSignupError}
+          handleSignupForm={handleSignupForm} handleVerify={handleVerify}
+          step={step} setStep={setStep}
+          showSignupPassword={showSignupPassword} setShowSignupPassword={setShowSignupPassword}
+          showSignupPassword2={showSignupPassword2} setShowSignupPassword2={setShowSignupPassword2}
+        />}
+        {showLogin && <LoginModal
+          showLogin={showLogin} setShowLogin={setShowLogin}
+          loginEmail={loginEmail} setLoginEmail={setLoginEmail}
+          loginPassword={loginPassword} setLoginPassword={setLoginPassword}
+          showLoginPassword={showLoginPassword} setShowLoginPassword={setShowLoginPassword}
+          loginError={loginError} handleLogin={handleLogin}
+        />}
       </AnimatePresence>
     </header>
+  );
+}
+
+// --- NavItem Component ---
+function NavItem({ href, icon, label }) {
+  return (
+    <a
+      href={href}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white hover:text-[#36C6E0] hover:bg-[#36C6E0]/10 transition-all"
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </a>
   );
 }

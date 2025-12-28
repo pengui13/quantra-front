@@ -124,7 +124,57 @@ export async function registerUser(email, password, onSuccess, onError) {
     onError,
   });
 }
+export async function ValidateAddress(symbol, address, network, onSuccess, onError) {
+  return apiRequest({
+    endpoint: `${BASE_URL}assets/validate-address/`,
+    method: "POST",
+    body: {
+      symbol: symbol.toUpperCase().trim(),
+      address: address.trim(),
+      network: network,
+    },
+    onSuccess,
+    onError,
+  });
+}
+export async function Withdraw(symbol, address, network, amount, onSuccess, onError) {
+  return apiRequest({
+    endpoint: `${BASE_URL}assets/withdraw/`,
+    method: "POST",
+    body: {
+      symbol: symbol.toUpperCase().trim(),
+      address: address.trim(),
+      network: network.trim(),
+      amount: amount.trim(),
+    },
+    onSuccess,
+    onError,
+  });
+}
 
+
+export async function GetWithdrawalHistory(symbol, limit, onSuccess, onError) {
+  const params = new URLSearchParams();
+  if (symbol) params.append("symbol", symbol.toUpperCase().trim());
+  if (limit) params.append("limit", limit);
+
+  return apiRequest({
+    endpoint: `${BASE_URL}assets/withdrawal-history/?${params.toString()}`,
+    method: "GET",
+    onSuccess,
+    onError,
+  });
+}
+
+
+export async function GetWithdrawalStatus(transactionId, onSuccess, onError) {
+  return apiRequest({
+    endpoint: `${BASE_URL}assets/withdrawal-status/${transactionId}/`,
+    method: "GET",
+    onSuccess,
+    onError,
+  });
+}
 export async function loginUser(email, password, onSuccess, onError) {
   return apiRequest({
     endpoint: `${BASE_URL}auth/token/`,
@@ -181,6 +231,15 @@ export async function GetStakedAssets(setData) {
     onError: (error) => console.error("Fetching assets failed", error),
   });
 }
+export async function GetWithdrawAssets(setData) {
+  apiRequest({
+    endpoint: `${BASE_URL}assets/?section=withdraw`,
+    onSuccess: (jsonData) => setData(Array.isArray(jsonData) ? jsonData : []),
+    onError: (error) =>
+      console.error("Fetching withdraw assets failed", error),
+  });
+}
+
 
 export async function GetTransExternalAll(setTrans) {
   apiRequest({

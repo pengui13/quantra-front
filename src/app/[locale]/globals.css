@@ -1,19 +1,17 @@
 @import "tailwindcss";
 
-/* Default (light mode) */
 :root {
-  --bkg: #f9f9f9;          /* main background */
-  --log-bkg: #f0f0f0;      /* lighter background */
-  --root-green: #4FD1C5;   /* brand color */
+  --bkg: #f9f9f9;     
+  --log-bkg: #f0f0f0;   
+  --root-green: #4FD1C5; 
   --root-green-8: rgba(79, 209, 197, 0.08);
 
-  --bl: #171717;           /* primary text (dark) */
-  --gr: #555555;           /* secondary text */
+  --bl: #171717;         
+  --gr: #555555;           
 }
 button{
   cursor: pointer;
 }
-/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --bkg: #121212;
@@ -21,12 +19,11 @@ button{
     --root-green: #4FD1C5;
     --root-green-8: rgba(79, 209, 197, 0.08);
 
-    --bl: #ededed;        /* bright text */
-    --gr: #9EA6B1;        /* muted text */
+    --bl: #ededed;     
+    --gr: #9EA6B1;        
   }
 }
 
-/* Tailwind theme mapping */
 @theme inline {
   --color-bkg: var(--bkg);
   --color-log-bkg: var(--log-bkg);
