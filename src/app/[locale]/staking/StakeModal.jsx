@@ -3,7 +3,7 @@
 import Modal from "react-modal";
 import { useState } from "react";
 import Image from "next/image";
-import { X, Zap, Coins, Calendar } from "lucide-react";
+import { X, Zap, AlertCircle } from "lucide-react";
 import { Stake } from "../../../../api/ApiWrapper";
 
 export default function StakeModal({ opened, open, symbol, setAssets }) {
@@ -18,18 +18,17 @@ export default function StakeModal({ opened, open, symbol, setAssets }) {
     }
 
     setIsLoading(true);
+    setError("");
 
     await Stake(
       symbol,
       parseFloat(amount),
       (errMsg) => {
-        // onError callback
-        setError(Array.isArray(errMsg) ? errMsg[0] : errMsg || "Staking failed");
+        setError(errMsg || "Staking failed");
         setIsLoading(false);
       },
       () => {
-        // onSuccess callback
-        if (setAssets) setAssets((prev) => [...prev]); // refresh parent
+        if (setAssets) setAssets((prev) => [...prev]); 
         setAmount("");
         setError("");
         setIsLoading(false);
@@ -129,7 +128,7 @@ export default function StakeModal({ opened, open, symbol, setAssets }) {
             </div>
             {error && (
               <div className="flex items-center gap-2 mt-1">
-                <div className="w-1 h-1 bg-red-400 rounded-full" />
+                <AlertCircle className="w-4 h-4 text-red-400" />
                 <span className="text-red-400 font-semibold text-xs">{error}</span>
               </div>
             )}

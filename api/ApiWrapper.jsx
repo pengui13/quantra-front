@@ -84,13 +84,15 @@ async function apiRequest({
     if (!response.ok) {
       const errorData = await response.json();
       onError({ status: response.status, data: errorData });
-      return;
+      throw new Error(errorData?.error?.[0] || "Request failed");
     }
 
     const data = await response.json();
     onSuccess(data);
+    return data;
   } catch (error) {
     onError({ message: error.message });
+    throw error; // Re-throw so UnStake can catch it
   }
 }
 export async function SetFiat({ asset_id }) {
@@ -146,8 +148,33 @@ export async function Stake(symbol, amount, onError, onSuccess) {
       amount: parseFloat(amount),
     },
     onSuccess,
-    onError,
+    onError: (errorObj) => {
+      let errorMessage = "Staking failed";
+      
+      if (typeof errorObj === 'string') {
+        errorMessage = errorObj;
+      } else if (errorObj?.data?.error) {
+        const errorData = errorObj.data.error;
+        errorMessage = Array.isArray(errorData) ? errorData[0] : errorData;
+      } else if (errorObj?.message) {
+        errorMessage = errorObj.message;
+      }
+      
+      onError(errorMessage);
+    },
   });
+}
+export async function UnStake(symbol, amount) {
+  const response = await apiRequest({
+    endpoint: `${BASE_URL}staking/unstake_asset/`,
+    method: "POST",
+    body: {
+      symbol: symbol.toUpperCase().trim(),
+      amount: parseFloat(amount),
+    },
+  });
+
+  return response;
 }
 export async function Withdraw(symbol, address, network, amount, onSuccess, onError) {
   return apiRequest({

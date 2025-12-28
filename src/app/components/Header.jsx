@@ -257,7 +257,7 @@ function NavItem({ href, icon, label }) {
   );
 }
 
-// --- MobileNavItem ---
+
 function MobileNavItem({ href, icon, label }) {
   return (
     <motion.a

@@ -89,6 +89,9 @@ export default function StakingPage({ balance = { staked_balance: 0 } }) {
     GetStakeAssets(setStakeAssets);
   }, []);
 
+  // Calculate total staked value in USD
+  const totalStakedUSD = stakeAssets.reduce((sum, item) => sum + (item.value || 0), 0);
+
   const handleMouseEnter = (index) => setVisibleDropdownIndex(index);
   const handleMouseLeave = () => setVisibleDropdownIndex(null);
   const handleStakeButton = (symbol) => {
@@ -129,7 +132,7 @@ export default function StakingPage({ balance = { staked_balance: 0 } }) {
             </div>
             <div className="flex flex-col gap-2">
               <span className="font-bold text-2xl text-white">
-                {balance.staked_balance || "0"} USD
+                ${totalStakedUSD.toFixed(2)} USD
               </span>
               <span className="text-xs text-gray-500">Current staking balance</span>
             </div>
