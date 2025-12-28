@@ -137,6 +137,18 @@ export async function ValidateAddress(symbol, address, network, onSuccess, onErr
     onError,
   });
 }
+export async function Stake(symbol, amount, onError, onSuccess) {
+  return apiRequest({
+    endpoint: `${BASE_URL}staking/stake_asset/`,
+    method: "POST",
+    body: {
+      symbol: symbol.toUpperCase().trim(),
+      amount: parseFloat(amount),
+    },
+    onSuccess,
+    onError,
+  });
+}
 export async function Withdraw(symbol, address, network, amount, onSuccess, onError) {
   return apiRequest({
     endpoint: `${BASE_URL}assets/withdraw/`,
@@ -248,13 +260,7 @@ export async function GetTransExternalAll(setTrans) {
     onError: (error) => console.error("Fetching transactions failed", error),
   });
 }
-export async function Stake(setTrans) {
-  apiRequest({
-    endpoint: `${BASE_URL}transactions/get_depowith/`,
-    onSuccess: (jsonData) => setTrans(jsonData),
-    onError: (error) => console.error("Fetching transactions failed", error),
-  });
-}
+
 export async function GetStakingTx(setTrans) {
   apiRequest({
     endpoint: `${BASE_URL}transactions/get_depowith/`,

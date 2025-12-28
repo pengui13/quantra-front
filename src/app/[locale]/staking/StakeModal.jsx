@@ -1,39 +1,47 @@
 "use client";
+
 import Modal from "react-modal";
-import { Stake, GetStakeAssets } from "../../../../api/ApiWrapper";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { X, Zap, Coins, Calendar } from "lucide-react";
+import { Stake } from "../../../../api/ApiWrapper";
 
 export default function StakeModal({ opened, open, symbol, setAssets }) {
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleStake() {
+  const handleStake = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setError("Please enter a valid amount");
       return;
     }
 
     setIsLoading(true);
-    await Stake(symbol, amount, setError);
-    setIsLoading(false);
-  }
 
-  useEffect(() => {
-    if (error === null) {
-      GetStakeAssets(setAssets);
-      open(false);
-      setError("");
-      setAmount("");
-    }
-  }, [error, open, setAssets]);
+    await Stake(
+      symbol,
+      parseFloat(amount),
+      (errMsg) => {
+        // onError callback
+        setError(Array.isArray(errMsg) ? errMsg[0] : errMsg || "Staking failed");
+        setIsLoading(false);
+      },
+      () => {
+        // onSuccess callback
+        if (setAssets) setAssets((prev) => [...prev]); // refresh parent
+        setAmount("");
+        setError("");
+        setIsLoading(false);
+        open(false);
+      }
+    );
+  };
 
   const handleClose = () => {
     open(false);
-    setError("");
     setAmount("");
+    setError("");
   };
 
   return (
@@ -77,7 +85,6 @@ export default function StakeModal({ opened, open, symbol, setAssets }) {
           </button>
         </div>
 
-        {/* Divider */}
         <div className="h-px bg-[#36C6E0]/10" />
 
         {/* Content */}
@@ -103,14 +110,10 @@ export default function StakeModal({ opened, open, symbol, setAssets }) {
 
           {/* Amount Input */}
           <div className="flex flex-col gap-2">
-            <label className={`text-xs font-semibold transition-colors ${
-              error ? "text-red-400" : "text-gray-400"
-            }`}>
+            <label className={`text-xs font-semibold transition-colors ${error ? "text-red-400" : "text-gray-400"}`}>
               Staking Amount
             </label>
-            <div className={`bg-black border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors ${
-              error ? "border-red-400/50 bg-red-400/5" : "border-[#36C6E0]/20 hover:border-[#36C6E0]/40"
-            }`}>
+            <div className={`bg-black border rounded-xl px-4 py-3 flex items-center gap-2 transition-colors ${error ? "border-red-400/50 bg-red-400/5" : "border-[#36C6E0]/20 hover:border-[#36C6E0]/40"}`}>
               <input
                 type="number"
                 placeholder="0.00"
@@ -132,72 +135,34 @@ export default function StakeModal({ opened, open, symbol, setAssets }) {
             )}
           </div>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Type */}
-            <div className="bg-black border border-[#36C6E0]/20 rounded-lg p-3 hover:border-[#36C6E0]/40 transition-colors">
-              <p className="text-gray-500 text-xs font-medium mb-2">Type</p>
-              <p className="text-white font-bold text-sm">Flexible</p>
-              <p className="text-gray-600 text-xs mt-1">No lock period</p>
-            </div>
+          {/* Footer Buttons */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleStake}
+              disabled={isLoading || !amount}
+              className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${isLoading || !amount ? "bg-[#36C6E0]/30 text-white cursor-not-allowed" : "bg-[#36C6E0] text-black hover:bg-[#36C6E0]/90 hover:shadow-lg hover:shadow-[#36C6E0]/30 active:scale-95"}`}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Staking...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4" />
+                  Stake {symbol}
+                </>
+              )}
+            </button>
 
-            {/* Rewards */}
-            <div className="bg-black border border-[#36C6E0]/20 rounded-lg p-3 hover:border-[#36C6E0]/40 transition-colors">
-              <div className="flex items-center gap-1 mb-2">
-                <Calendar className="w-3 h-3 text-[#36C6E0]" />
-                <p className="text-gray-500 text-xs font-medium">Rewards</p>
-              </div>
-              <p className="text-white font-bold text-sm">Weekly</p>
-              <p className="text-gray-600 text-xs mt-1">Every 7 days</p>
-            </div>
+            <button
+              onClick={handleClose}
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl font-semibold border border-[#36C6E0]/20 text-[#36C6E0] hover:border-[#36C6E0]/50 hover:bg-[#36C6E0]/5 transition-all disabled:opacity-50"
+            >
+              Cancel
+            </button>
           </div>
-
-          {/* APR Info */}
-          <div className="bg-gradient-to-r from-[#36C6E0]/10 to-transparent border border-[#36C6E0]/20 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Coins className="w-5 h-5 text-[#36C6E0] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-white mb-1">Earn Passive Income</p>
-                <p className="text-xs text-gray-400">You'll earn rewards automatically based on current APR rates. Rewards are credited directly to your account.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="h-px bg-[#36C6E0]/10" />
-
-        {/* Footer Buttons */}
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleStake}
-            disabled={isLoading || !amount}
-            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
-              isLoading || !amount
-                ? "bg-[#36C6E0]/30 text-white cursor-not-allowed"
-                : "bg-[#36C6E0] text-black hover:bg-[#36C6E0]/90 hover:shadow-lg hover:shadow-[#36C6E0]/30 active:scale-95"
-            }`}
-          >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Staking...
-              </>
-            ) : (
-              <>
-                <Zap className="w-4 h-4" />
-                Stake {symbol}
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleClose}
-            disabled={isLoading}
-            className="w-full py-3 rounded-xl font-semibold border border-[#36C6E0]/20 text-[#36C6E0] hover:border-[#36C6E0]/50 hover:bg-[#36C6E0]/5 transition-all disabled:opacity-50"
-          >
-            Cancel
-          </button>
         </div>
       </div>
     </Modal>
