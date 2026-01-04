@@ -338,7 +338,6 @@ export default function StakingPage({ balance = { staked_balance: 0 } }) {
         </div>
       </div>
 
-      {/* Modals */}
       <StakeModal
         opened={openedStake}
         open={openStake}
